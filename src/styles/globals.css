@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+@theme inline {
+  --font-sans: var(--font-space-mono);
+  --font-serif: var(--font-playfair-display);
+}
+
+:root {
+  --type-xs: clamp(0.68rem, 0.95vw, 0.98rem);
+  --type-sm: clamp(0.82rem, 1.35vw, 1.25rem);
+  --type-md: clamp(1.2rem, 2.3vw, 2.15rem);
+  --type-xl: clamp(2.8rem, 9vw, 9.4rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background: transparent;
+  color: #f8f7ff;
+  font-family: var(--font-space-mono), "Space Mono", monospace;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+@media (pointer: fine) {
+  html,
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    cursor: none;
+  }
+}
+
+canvas {
+  display: block;
+}
+
+.somnia-blend-copy {
+  color: #ffffff;
+  mix-blend-mode: difference;
+}
+
+::selection {
+  background: rgba(255, 113, 133, 0.35);
+}
