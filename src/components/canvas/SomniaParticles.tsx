@@ -12,7 +12,7 @@ import {
 } from "three";
 import { useSomniaStore } from "@/store/useSomniaStore";
 
-const PARTICLE_COUNT = 170000;
+const PARTICLE_COUNT = 260000;
 const EYE_CENTER_X = 1.28;
 const EYE_CENTER_Y = 0.12;
 const LEFT_EYE_CENTER: [number, number, number] = [-EYE_CENTER_X, EYE_CENTER_Y, 0];
@@ -182,14 +182,16 @@ void main() {
   vec3 chaos = aStateChaos;
   chaos += simplexFlow(aStateChaos, uTime * 0.9, aSeed) * (0.22 + chaosPhase * 1.05);
 
-  vec3 orb = aStateOrb * (1.0 + uBreath * 0.12);
-  orb += simplexFlow(aStateOrb * 0.9, uTime * 0.34, aSeed + 2.0) * 0.16;
+  vec3 orbPosition = normalize(
+    aStateOrb + simplexFlow(aStateOrb * 0.9, uTime * 0.34, aSeed + 2.0) * 0.24 + vec3(0.0001)
+  ) * (0.62 + aScale * 0.58 + uBreath * 0.18);
+  float phase3Progress = smoothstep(0.56, 0.72, uProgress);
 
   vec3 dust = aStateDust;
   dust += simplexFlow(aStateDust * 0.72, uTime * 0.63, aSeed + 3.0) * (0.16 + releasePhase * 0.55);
 
   vec3 target = mix(eyes, chaos, chaosPhase);
-  target = mix(target, orb, anchorPhase);
+  target = mix(target, orbPosition, phase3Progress);
   target = mix(target, dust, releasePhase);
 
   vec3 fluid = simplexFlow(target * 0.84, uTime * 1.05, aSeed + 5.0);
@@ -237,8 +239,8 @@ void main() {
   vec2 xy = gl_PointCoord.xy - vec2(0.5);
   float ll = length(xy);
   if(ll > 0.5) discard;
-  float alpha = pow(1.0 - (ll * 2.0), 2.0); // Smooth falloff
-  gl_FragColor = vec4(vColor, alpha * 0.15); // Low opacity for additive blending
+  float alphaFalloff = pow(1.0 - (ll * 2.0), 2.0); // Smooth falloff
+  gl_FragColor = vec4(vColor, 0.4 * alphaFalloff);
 }
 `;
 

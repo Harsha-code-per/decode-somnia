@@ -16,7 +16,7 @@ function SceneContent() {
     <>
       <SomniaParticles />
       <EffectComposer multisampling={0} enableNormalPass={false}>
-        <Bloom luminanceThreshold={0.4} mipmapBlur={true} intensity={2.0} />
+        <Bloom luminanceThreshold={0.0} mipmapBlur={true} intensity={2.0} />
       </EffectComposer>
     </>
   );
