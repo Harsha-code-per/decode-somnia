@@ -33,7 +33,13 @@ export function Overlay() {
   const activeChapterRef = useRef(-1);
   const scrambleTweensRef = useRef<Array<gsap.core.Tween>>([]);
   const experienceUnlocked = useSomniaStore((state) => state.experienceUnlocked);
+  const thought = useSomniaStore((state) => state.thought);
   const setScrollProgress = useSomniaStore((state) => state.setScrollProgress);
+  const displayedThought = (thought.trim() || "this weight").replace(/[.?!]+$/g, "");
+  const chapterOneTitle =
+    displayedThought.length > 44
+      ? `You are holding onto ${displayedThought.slice(0, 41)}...`
+      : `You are holding onto ${displayedThought}.`;
 
   useLayoutEffect(() => {
     const stage = document.querySelector<HTMLElement>("[data-somnia-stage]");
@@ -58,13 +64,28 @@ export function Overlay() {
         elements.forEach((element, index) => {
           const finalText = element.dataset.copy ?? element.textContent ?? "";
           const state = { value: 0 };
+          const delay = index * 0.05;
 
-          element.textContent = finalText;
+          gsap.set(element, {
+            autoAlpha: 0,
+            y: 14,
+            filter: "blur(10px)",
+          });
+          element.textContent = scrambleText(finalText, 0);
 
-          const tween = gsap.to(state, {
+          const revealTween = gsap.to(element, {
+            autoAlpha: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.62 + index * 0.07,
+            delay,
+            ease: "power2.out",
+          });
+
+          const scrambleTween = gsap.to(state, {
             value: finalText.length,
             duration: 0.68 + index * 0.08,
-            delay: index * 0.05,
+            delay,
             ease: "power2.out",
             onUpdate: () => {
               element.textContent = scrambleText(finalText, Math.floor(state.value));
@@ -74,7 +95,7 @@ export function Overlay() {
             },
           });
 
-          scrambleTweensRef.current.push(tween);
+          scrambleTweensRef.current.push(revealTween, scrambleTween);
         });
       };
 
@@ -94,14 +115,11 @@ export function Overlay() {
             setScrollProgress(self.progress);
 
             const nextChapter =
-              self.progress < 0.2 ? -1 : self.progress < 0.5 ? 0 : self.progress < 0.8 ? 1 : self.progress < 0.96 ? 2 : 3;
+              self.progress < 0.25 ? 0 : self.progress < 0.6 ? 1 : self.progress < 0.85 ? 2 : 3;
 
             if (activeChapterRef.current !== nextChapter) {
               activeChapterRef.current = nextChapter;
-
-              if (nextChapter >= 0) {
-                runDecode(nextChapter);
-              }
+              runDecode(nextChapter);
             }
           },
           onRefresh: (self) => {
@@ -114,43 +132,43 @@ export function Overlay() {
         chapterRefs.current[0],
         { autoAlpha: 0, xPercent: -6, yPercent: 6 },
         { autoAlpha: 1, xPercent: 0, yPercent: 0, duration: 1.3 },
-        3.15
+        0.15
       );
       masterTimeline.to(
         chapterRefs.current[0],
         { autoAlpha: 0, yPercent: -8, duration: 0.95 },
-        5.95
+        3.15
       );
 
       masterTimeline.fromTo(
         chapterRefs.current[1],
         { autoAlpha: 0, xPercent: 8, yPercent: 4 },
         { autoAlpha: 1, xPercent: 0, yPercent: 0, duration: 1.2 },
-        7.55
+        3.55
       );
       masterTimeline.to(
         chapterRefs.current[1],
         { autoAlpha: 0, xPercent: -4, duration: 0.95 },
-        10.25
+        7.65
       );
 
       masterTimeline.fromTo(
         chapterRefs.current[2],
         { autoAlpha: 0, yPercent: 10, scale: 0.98 },
         { autoAlpha: 1, yPercent: 0, scale: 1, duration: 1.2 },
-        11.95
+        8.05
       );
       masterTimeline.to(
         chapterRefs.current[2],
         { autoAlpha: 0, yPercent: -8, duration: 0.95 },
-        14.35
+        10.95
       );
 
       masterTimeline.fromTo(
         chapterRefs.current[3],
         { autoAlpha: 0, xPercent: 6, yPercent: 6 },
         { autoAlpha: 1, xPercent: 0, yPercent: 0, duration: 1.25 },
-        14.95
+        11.3
       );
     }, overlayRef);
 
@@ -172,7 +190,7 @@ export function Overlay() {
         experienceUnlocked ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div ref={textLayerRef} className="absolute inset-0 text-white">
+      <div ref={textLayerRef} className="somnia-blend-copy absolute inset-0 text-white">
         <section
           ref={(node) => {
             chapterRefs.current[0] = node;
@@ -188,23 +206,23 @@ export function Overlay() {
               Hold
             </p>
             <h1
-              data-copy="We hold onto thoughts until they become walls."
+              data-copy={chapterOneTitle}
               data-decode
               className="mt-[2.6vh] font-serif text-[clamp(2.8rem,6.3vw,7.2rem)] leading-[0.9] tracking-[-0.04em]"
             >
-              We hold onto thoughts until they become walls.
+              {chapterOneTitle}
             </h1>
             <p
-              data-copy="A single unfinished thought can start to feel architectural. It hardens around the body, repeats itself, and turns the room against your rest."
+              data-copy="It feels immovable only while it stays unnamed. Once it is outside you, it becomes something visible, unstable, and ready to change."
               data-decode
               className="mt-[3.2vh] max-w-[34ch] font-sans text-[clamp(0.94rem,1.2vw,1.14rem)] leading-[1.72] opacity-[0.82]"
             >
-              A single unfinished thought can start to feel architectural. It hardens
-              around the body, repeats itself, and turns the room against your rest.
+              It feels immovable only while it stays unnamed. Once it is outside you,
+              it becomes something visible, unstable, and ready to change.
             </p>
           </div>
 
-          <p className="absolute bottom-[12vh] right-[8vw] font-sans text-[clamp(6rem,18vw,16rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] mix-blend-overlay max-md:hidden">
+          <p className="absolute bottom-[12vh] right-[8vw] font-sans text-[clamp(6rem,18vw,16rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] max-md:hidden">
             01
           </p>
         </section>
@@ -217,30 +235,30 @@ export function Overlay() {
         >
           <div className="somnia-blend-copy absolute right-[8vw] top-[23vh] w-[min(82vw,39rem)] text-right max-md:left-1/2 max-md:right-auto max-md:top-[24vh] max-md:w-[84vw] max-md:-translate-x-1/2 max-md:text-left">
             <p
-              data-copy="Shape"
+              data-copy="Break"
               data-decode
               className="font-sans text-[clamp(0.72rem,0.94vw,0.92rem)] uppercase tracking-[0.34em] opacity-[0.72]"
             >
-              Shape
+              Break
             </p>
             <h2
-              data-copy="But they are just dust. You control the shape."
+              data-copy="Watch it break. It is only weight."
               data-decode
               className="mt-[2.6vh] font-serif text-[clamp(2.6rem,5.8vw,6.35rem)] leading-[0.91] tracking-[-0.038em]"
             >
-              But they are just dust. You control the shape.
+              Watch it break. It is only weight.
             </h2>
             <p
-              data-copy="Once the thought is released, it loses its authority. What felt solid becomes something lighter, movable, and yours to soften."
+              data-copy="The force was never the truth. It was repetition. It was pressure. It can fracture, scatter, and stop claiming all of the room."
               data-decode
               className="mt-[3.2vh] ml-auto max-w-[35ch] font-sans text-[clamp(0.94rem,1.2vw,1.14rem)] leading-[1.72] opacity-[0.82] max-md:ml-0"
             >
-              Once the thought is released, it loses its authority. What felt solid
-              becomes something lighter, movable, and yours to soften.
+              The force was never the truth. It was repetition. It was pressure. It can
+              fracture, scatter, and stop claiming all of the room.
             </p>
           </div>
 
-          <p className="absolute left-[8vw] top-[14vh] font-sans text-[clamp(6rem,17vw,15rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] mix-blend-overlay max-md:hidden">
+          <p className="absolute left-[8vw] top-[14vh] font-sans text-[clamp(6rem,17vw,15rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] max-md:hidden">
             02
           </p>
         </section>
@@ -253,30 +271,30 @@ export function Overlay() {
         >
           <div className="somnia-blend-copy absolute left-[8vw] bottom-[17vh] w-[min(84vw,42rem)] max-md:left-1/2 max-md:bottom-[18vh] max-md:-translate-x-1/2">
             <p
-              data-copy="Gather"
+              data-copy="Breathe"
               data-decode
               className="font-sans text-[clamp(0.72rem,0.94vw,0.92rem)] uppercase tracking-[0.34em] opacity-[0.72]"
             >
-              Gather
+              Breathe
             </p>
             <h2
-              data-copy="Breathe in. Gather the fragments."
+              data-copy="Pull the fragments together. Breathe."
               data-decode
               className="mt-[2.6vh] font-serif text-[clamp(2.55rem,5.95vw,6.45rem)] leading-[0.9] tracking-[-0.04em]"
             >
-              Breathe in. Gather the fragments.
+              Pull the fragments together. Breathe.
             </h2>
             <p
-              data-copy="Let the light pull everything inward. Follow its rhythm: four seconds in, six seconds out, until the noise gives up its edges."
+              data-copy="Give the scattered pieces one rhythm to follow. Four seconds in. Six seconds out. Let the light teach the body how to settle."
               data-decode
               className="mt-[3.2vh] max-w-[36ch] font-sans text-[clamp(0.94rem,1.2vw,1.14rem)] leading-[1.72] opacity-[0.82]"
             >
-              Let the light pull everything inward. Follow its rhythm: four seconds in,
-              six seconds out, until the noise gives up its edges.
+              Give the scattered pieces one rhythm to follow. Four seconds in. Six
+              seconds out. Let the light teach the body how to settle.
             </p>
           </div>
 
-          <p className="absolute right-[8vw] top-[12vh] font-sans text-[clamp(6rem,17vw,15rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] mix-blend-overlay max-md:hidden">
+          <p className="absolute right-[8vw] top-[12vh] font-sans text-[clamp(6rem,17vw,15rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] max-md:hidden">
             03
           </p>
         </section>
@@ -289,11 +307,11 @@ export function Overlay() {
         >
           <div className="somnia-blend-copy absolute right-[8vw] bottom-[18vh] w-[min(82vw,36rem)] text-right max-md:left-1/2 max-md:right-auto max-md:bottom-[18vh] max-md:w-[84vw] max-md:-translate-x-1/2 max-md:text-left">
             <p
-              data-copy="Rest"
+              data-copy="Sleep"
               data-decode
               className="font-sans text-[clamp(0.72rem,0.94vw,0.92rem)] uppercase tracking-[0.34em] opacity-[0.72]"
             >
-              Rest
+              Sleep
             </p>
             <h2
               data-copy="The night is quiet now. Rest."
@@ -304,7 +322,7 @@ export function Overlay() {
             </h2>
           </div>
 
-          <p className="absolute left-[8vw] top-[12vh] font-sans text-[clamp(6rem,17vw,15rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] mix-blend-overlay max-md:hidden">
+          <p className="absolute left-[8vw] top-[12vh] font-sans text-[clamp(6rem,17vw,15rem)] leading-none tracking-[-0.08em] text-white opacity-[0.1] max-md:hidden">
             04
           </p>
         </section>

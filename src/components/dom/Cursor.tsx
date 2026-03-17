@@ -21,14 +21,23 @@ export function Cursor() {
     let currentX = targetX;
     let currentY = targetY;
     let rafId = 0;
+    let isVisible = false;
 
-    const onPointerMove = (event: PointerEvent) => {
-      targetX = event.clientX;
-      targetY = event.clientY;
-      cursor.style.opacity = "1";
+    cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
+    cursor.style.opacity = "0";
+
+    const onPointerMove = (e: PointerEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+
+      if (!isVisible) {
+        isVisible = true;
+        cursor.style.opacity = "1";
+      }
     };
 
     const onPointerLeave = () => {
+      isVisible = false;
       cursor.style.opacity = "0";
     };
 
@@ -53,7 +62,7 @@ export function Cursor() {
   return (
     <div
       ref={cursorRef}
-      className="pointer-events-none fixed left-0 top-0 z-[70] h-9 w-9 rounded-full border border-white/90 opacity-0 mix-blend-difference will-change-transform"
+      className="pointer-events-none fixed left-0 top-0 z-[120] h-8 w-8 rounded-full border border-white/90 opacity-0 mix-blend-difference transition-opacity duration-150 will-change-transform"
     />
   );
 }

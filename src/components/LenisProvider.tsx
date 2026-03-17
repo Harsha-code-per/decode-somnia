@@ -15,23 +15,39 @@ interface LenisProviderProps {
 export function LenisProvider({ children }: LenisProviderProps) {
   const lenisRef = useRef<LenisRef>(null);
   const setMousePosition = useSomniaStore((state) => state.setMousePosition);
-  const experienceUnlocked = useSomniaStore((state) => state.experienceUnlocked);
+  const scrollUnlocked = useSomniaStore((state) => state.scrollUnlocked);
 
   useLenis(() => {
     ScrollTrigger.update();
   }, []);
 
   useEffect(() => {
+    let rafId = 0;
+    let pendingX = 0;
+    let pendingY = 0;
+
+    const flushPointer = () => {
+      rafId = 0;
+      setMousePosition(pendingX, pendingY);
+    };
+
     const onPointerMove = (event: PointerEvent) => {
-      const x = (event.clientX / window.innerWidth) * 2 - 1;
-      const y = (event.clientY / window.innerHeight) * 2 - 1;
-      setMousePosition(x, y);
+      pendingX = (event.clientX / window.innerWidth) * 2 - 1;
+      pendingY = (event.clientY / window.innerHeight) * 2 - 1;
+
+      if (rafId === 0) {
+        rafId = window.requestAnimationFrame(flushPointer);
+      }
     };
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
 
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
+
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId);
+      }
     };
   }, [setMousePosition]);
 
@@ -48,7 +64,7 @@ export function LenisProvider({ children }: LenisProviderProps) {
     const root = document.documentElement;
     const body = document.body;
 
-    if (!experienceUnlocked) {
+    if (!scrollUnlocked) {
       lenis?.stop();
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       root.style.overflow = "hidden";
@@ -69,7 +85,7 @@ export function LenisProvider({ children }: LenisProviderProps) {
     return () => {
       window.cancelAnimationFrame(refreshId);
     };
-  }, [experienceUnlocked]);
+  }, [scrollUnlocked]);
 
   return (
     <ReactLenis

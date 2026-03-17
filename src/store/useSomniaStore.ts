@@ -12,13 +12,17 @@ interface SomniaStore {
   anxietyLevel: number;
   act: SomniaAct;
   mousePosition: MousePosition;
+  preloadComplete: boolean;
   experienceUnlocked: boolean;
-  releaseProgress: number;
+  scrollUnlocked: boolean;
+  shatterProgress: number;
   thought: string;
   setScrollProgress: (value: number) => void;
   setMousePosition: (x: number, y: number) => void;
+  setPreloadComplete: (value: boolean) => void;
   setExperienceUnlocked: (value: boolean) => void;
-  setReleaseProgress: (value: number) => void;
+  setScrollUnlocked: (value: boolean) => void;
+  setShatterProgress: (value: number) => void;
   setThought: (value: string) => void;
 }
 
@@ -60,8 +64,10 @@ export const useSomniaStore = create<SomniaStore>((set) => ({
   anxietyLevel: 0,
   act: 1,
   mousePosition: { x: 0, y: 0 },
+  preloadComplete: false,
   experienceUnlocked: false,
-  releaseProgress: 0,
+  scrollUnlocked: false,
+  shatterProgress: 0,
   thought: "",
   setScrollProgress: (value) => {
     const progress = clamp01(value);
@@ -80,14 +86,24 @@ export const useSomniaStore = create<SomniaStore>((set) => ({
       },
     });
   },
+  setPreloadComplete: (value) => {
+    set({
+      preloadComplete: value,
+    });
+  },
   setExperienceUnlocked: (value) => {
     set({
       experienceUnlocked: value,
     });
   },
-  setReleaseProgress: (value) => {
+  setScrollUnlocked: (value) => {
     set({
-      releaseProgress: clamp01(value),
+      scrollUnlocked: value,
+    });
+  },
+  setShatterProgress: (value) => {
+    set({
+      shatterProgress: clamp01(value),
     });
   },
   setThought: (value) => {

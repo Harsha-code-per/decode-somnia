@@ -2,27 +2,43 @@
 
 import { AdaptiveDpr } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import {
+  Bloom,
+  EffectComposer,
+} from "@react-three/postprocessing";
 import { Suspense } from "react";
-import { Effects } from "./Effects";
-import { ParticleSwarm } from "./ParticleSwarm";
+import { Color } from "three";
+import { SomniaParticles } from "./SomniaParticles";
+import { useSomniaStore } from "@/store/useSomniaStore";
 
 function SceneContent() {
   return (
     <>
-      <color attach="background" args={["#000000"]} />
-      <ParticleSwarm />
-      <Effects />
+      <SomniaParticles />
+      <EffectComposer multisampling={0} enableNormalPass={false}>
+        <Bloom luminanceThreshold={0.4} mipmapBlur={true} intensity={2.0} />
+      </EffectComposer>
     </>
   );
 }
 
 export function Scene() {
+  const experienceUnlocked = useSomniaStore((state) => state.experienceUnlocked);
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-[-1]">
+    <div
+      className={`pointer-events-none fixed inset-0 z-[-1] transition-opacity duration-700 ${
+        experienceUnlocked ? "opacity-100" : "opacity-0"
+      }`}
+    >
       <Canvas
-        dpr={[1, 1.75]}
+        dpr={[1, 1.5]}
+        performance={{ min: 0.5 }}
         camera={{ position: [0, 0, 4], fov: 42, near: 0.1, far: 30 }}
         gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
+        onCreated={({ scene }) => {
+          scene.background = new Color("#000000");
+        }}
       >
         <AdaptiveDpr />
         <Suspense fallback={null}>

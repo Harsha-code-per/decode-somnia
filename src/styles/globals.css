@@ -22,7 +22,7 @@ body {
   margin: 0;
   width: 100%;
   min-height: 100%;
-  background: transparent;
+  background: #000000;
   color: #f8f7ff;
   font-family: var(--font-space-mono), "Space Mono", monospace;
 }
