@@ -1,7 +1,6 @@
 # Somnia — Decode & Design
 
 An immersive, scroll-driven WebGL narrative about overthinking, release, and rest.  
-This README reflects the **current codebase exactly**.
 
 ## Stack (current)
 
@@ -171,16 +170,3 @@ src/
   styles/
     globals.css
 ```
-
-## Project conventions reflected in code
-
-- Shared cross-layer values live in Zustand, not duplicated local state.
-- Scroll-linked systems reuse `SCROLL_DISTANCE` from `src/lib/somnia.ts`.
-- Pointer is normalized before storage (`-1..1`).
-- Scroll/progress values are clamped to `0..1`.
-- Import alias is configured as `@/* -> src/*` in `tsconfig.json`.
-
-## Testing status
-
-- No `test` script exists in `package.json`.
-- No test files (`*.test.*`, `*.spec.*`) are currently present under `src/`.
